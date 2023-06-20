@@ -7,6 +7,7 @@ import axios from 'axios'
 import { ScreenHeaderBtn, NearbyJobCard } from '../../components'
 import { COLORS, icons, SIZES } from '../../constants'
 import styles from '../../styles/search'
+import { client } from '../../hook/sanity'
 
 const JobSearch = () => {
     const params = useSearchParams();
@@ -16,6 +17,7 @@ const JobSearch = () => {
     const [searchLoader, setSearchLoader] = useState(false);
     const [searchError, setSearchError] = useState(null);
     const [page, setPage] = useState(1);
+    const [sanityData,setSanityData]=useState([])
 
     const handleSearch = async () => {
         setSearchLoader(true);
@@ -34,7 +36,12 @@ const JobSearch = () => {
                     page: page.toString(),
                 },
             };
-
+            console.log('params',params)
+             client
+                .fetch(`*[_type=='job' && job_type==${params.id}]`)
+                .then((data)=>{
+                    setSanityData(data)
+                })
             const response = await axios.request(options);
             setSearchResult(response.data.data);
         } catch (error) {
@@ -77,14 +84,14 @@ const JobSearch = () => {
             />
 
             <FlatList
-                data={searchResult}
+                data={sanityData}
                 renderItem={({ item }) => (
                     <NearbyJobCard
                         job={item}
                         handleNavigate={() => router.push(`/job-details/${item.job_id}`)}
                     />
                 )}
-                keyExtractor={(item) => item.job_id}
+                keyExtractor={(item) => item._id}
                 contentContainerStyle={{ padding: SIZES.medium, rowGap: SIZES.medium }}
                 ListHeaderComponent={() => (
                     <>
@@ -93,11 +100,13 @@ const JobSearch = () => {
                             <Text style={styles.noOfSearchedJobs}>Job Opportunities</Text>
                         </View>
                         <View style={styles.loaderContainer}>
-                            {searchLoader ? (
+                            {searchLoader && (
                                 <ActivityIndicator size='large' color={COLORS.primary} />
-                            ) : searchError && (
-                                <Text>Oops something went wrong</Text>
-                            )}
+                            ) 
+                            // : searchError && (
+                            //     <Text>Oops something went wrong</Text>
+                            // )
+                            }
                         </View>
                     </>
                 )}

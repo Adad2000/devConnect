@@ -1,3 +1,4 @@
+import 'react-native-url-polyfill/auto';
 import {useState} from 'react';
 import { View, ScrollView,Text, SafeAreaView} from 'react-native';
 import {Stack, useRouter} from 'expo-router';
