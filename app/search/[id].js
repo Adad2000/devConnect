@@ -13,37 +13,21 @@ const JobSearch = () => {
     const params = useSearchParams();
     const router = useRouter()
 
-    const [searchResult, setSearchResult] = useState([]);
     const [searchLoader, setSearchLoader] = useState(false);
     const [searchError, setSearchError] = useState(null);
     const [page, setPage] = useState(1);
-    const [sanityData,setSanityData]=useState([])
+    const [sanityData,setSanityData]=useState([]);
 
     const handleSearch = async () => {
         setSearchLoader(true);
-        setSearchResult([])
+        setSanityData([])
 
         try {
-            const options = {
-                method: "GET",
-                url: `https://jsearch.p.rapidapi.com/search`,
-                headers: {
-                    "X-RapidAPI-Key": '5179b8f080msh7df6cb6fd4a4f21p1d8d15jsn845de66a222a',
-                    "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
-                },
-                params: {
-                    query: params.id,
-                    page: page.toString(),
-                },
-            };
-            console.log('params',params)
              client
-                .fetch(`*[_type=='job' && job_type==${params.id}]`)
+                .fetch(`*[_type=='job' && job_type=='${params.id}']`)
                 .then((data)=>{
                     setSanityData(data)
                 })
-            const response = await axios.request(options);
-            setSearchResult(response.data.data);
         } catch (error) {
             setSearchError(error);
             console.log(error);
@@ -65,7 +49,7 @@ const JobSearch = () => {
     useEffect(() => {
         handleSearch()
     }, [])
-
+    
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.lightWhite }}>
             <Stack.Screen
@@ -88,7 +72,7 @@ const JobSearch = () => {
                 renderItem={({ item }) => (
                     <NearbyJobCard
                         job={item}
-                        handleNavigate={() => router.push(`/job-details/${item.job_id}`)}
+                        handleNavigate={() => router.push(`/job-details/${item._id}`)}
                     />
                 )}
                 keyExtractor={(item) => item._id}
@@ -100,12 +84,12 @@ const JobSearch = () => {
                             <Text style={styles.noOfSearchedJobs}>Job Opportunities</Text>
                         </View>
                         <View style={styles.loaderContainer}>
-                            {searchLoader && (
+                            {searchLoader ? (
                                 <ActivityIndicator size='large' color={COLORS.primary} />
                             ) 
-                            // : searchError && (
-                            //     <Text>Oops something went wrong</Text>
-                            // )
+                            : searchError && (
+                                <Text>Oops something went wrong</Text>
+                            )
                             }
                         </View>
                     </>
