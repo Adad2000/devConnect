@@ -11,9 +11,7 @@ const tabs =["About","Qualifications", "Responsibilities"]
 const JobDetails =()=>{
     const params= useSearchParams();
     const router= useRouter();
-    const {data,isLoading,error,refetch}= useFetch('job-details',{
-        job_id:params.id
-    })
+    const {data,isLoading,error,refetch,sanityData}= useFetch(`*[_type == 'job' && _id=='${params.id}']`)
 
     const [refreshing,setRefreshing]= useState(false);
     const [activeTab,setActiveTab]= useState(tabs[0])
@@ -22,22 +20,22 @@ const JobDetails =()=>{
         refetch();
         setRefreshing(false);
     },[])
-    
+    // console.log('sanity',sanityData[0].qualifications)
     const displayTabContent=()=>{
         switch (activeTab){
             case "Qualifications":
                 return <Specifics
                     title="Qualifications"
-                    points={data[0].job_highlights?.Qualifications ?? ['N/A']}
+                    points={sanityData[0].qualifications ?? ['N/A']}
                 />
             case "About":
                 return <JobAbout
-                    info={data[0].job_description ?? "No data provided"}
+                    info={sanityData[0].job_description ?? "No data provided"}
                 />
             case "Responsibilities":
                 return <Specifics
                     title="Responsibilities"
-                    points={data[0].job_highlights?.Responsibilities ?? ['N/A']}
+                    points={sanityData[0].responsibilities ?? ['N/A']}
                 /> 
             default:
             break;
@@ -70,17 +68,19 @@ const JobDetails =()=>{
                 <ScrollView showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
                     {isLoading?(
                         <ActivityIndicator size={'large'} color={COLORS.primary}/>
-                    ): error ? (
-                        <Text>Something went wrong</Text>
-                    ): data.length ===0 ?(
+                    )
+                    // : error ? (
+                    //     <Text>Something went wrong</Text>
+                    // )
+                    : sanityData.length ===0 ?(
                         <Text>No data</Text>
                     ):(
                         <View style={{padding:SIZES.medium,paddingBottom:100}}>
                             <Company
-                                companyLogo={data[0].employer_logo}
-                                jobTitle={data[0].job_title}
-                                companyName={data[0].employer_name}
-                                location={data[0].job_country}
+                                companyLogo={sanityData[0].employer_logo}
+                                jobTitle={sanityData[0].job_title}
+                                companyName={sanityData[0].employer_name}
+                                location={sanityData[0].job_location}
                             />
                             <JobTabs
                                 tabs={tabs}
@@ -91,7 +91,7 @@ const JobDetails =()=>{
                         </View>
                     )}
                 </ScrollView>
-                <JobFooter url={data[0]?.job_google_link ?? 'https://careers.google.com/jobs/results'}/>
+                <JobFooter url={sanityData[0]?.job_link ?? 'https://careers.google.com/jobs/results'}/>
             </>
             
         </SafeAreaView>

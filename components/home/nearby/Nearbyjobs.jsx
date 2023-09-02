@@ -9,12 +9,7 @@ import styles from './nearbyjobs.style'
 const Nearbyjobs = () => {
   const router= useRouter()
 
-  const {data, isLoading,error}= useFetch(
-    'search',{
-      query:'React developer',
-      num_pages:1
-    }
-  )
+  const {data, isLoading,error,sanityData}= useFetch(`*[_type == 'job']`)
   
   return (
     <View style= {styles.container}>
@@ -27,14 +22,16 @@ const Nearbyjobs = () => {
       <View style={styles.cardsContainer}>
         {isLoading ? (
           <ActivityIndicator size='large' colors={COLORS.primary}/>
-        ): error ?(
+        )
+        : error ?(
           <Text>Something went wrong</Text>
-        ):(
-          data?.map((job)=>(
+        )
+        :(
+          sanityData?.map((job)=>(
             <NearbyJobCard
               job={job}
-              key={`nearby-job-${job?.job_id}`}
-              handleNavigate={()=> router.push(`/job-details/${job.job_id}`)}
+              key={job._id}
+              handleNavigate={()=> router.push(`/job-details/${job._id}`)}
             />
           ))
         )}

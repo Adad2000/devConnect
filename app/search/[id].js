@@ -7,36 +7,27 @@ import axios from 'axios'
 import { ScreenHeaderBtn, NearbyJobCard } from '../../components'
 import { COLORS, icons, SIZES } from '../../constants'
 import styles from '../../styles/search'
+import { client } from '../../hook/sanity'
 
 const JobSearch = () => {
     const params = useSearchParams();
     const router = useRouter()
 
-    const [searchResult, setSearchResult] = useState([]);
     const [searchLoader, setSearchLoader] = useState(false);
     const [searchError, setSearchError] = useState(null);
     const [page, setPage] = useState(1);
+    const [sanityData,setSanityData]=useState([]);
 
     const handleSearch = async () => {
         setSearchLoader(true);
-        setSearchResult([])
+        setSanityData([])
 
         try {
-            const options = {
-                method: "GET",
-                url: `https://jsearch.p.rapidapi.com/search`,
-                headers: {
-                    "X-RapidAPI-Key": '5179b8f080msh7df6cb6fd4a4f21p1d8d15jsn845de66a222a',
-                    "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
-                },
-                params: {
-                    query: params.id,
-                    page: page.toString(),
-                },
-            };
-
-            const response = await axios.request(options);
-            setSearchResult(response.data.data);
+             client
+                .fetch(`*[_type=='job' && job_type=='${params.id}']`)
+                .then((data)=>{
+                    setSanityData(data)
+                })
         } catch (error) {
             setSearchError(error);
             console.log(error);
@@ -58,7 +49,7 @@ const JobSearch = () => {
     useEffect(() => {
         handleSearch()
     }, [])
-
+    
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.lightWhite }}>
             <Stack.Screen
@@ -77,14 +68,14 @@ const JobSearch = () => {
             />
 
             <FlatList
-                data={searchResult}
+                data={sanityData}
                 renderItem={({ item }) => (
                     <NearbyJobCard
                         job={item}
-                        handleNavigate={() => router.push(`/job-details/${item.job_id}`)}
+                        handleNavigate={() => router.push(`/job-details/${item._id}`)}
                     />
                 )}
-                keyExtractor={(item) => item.job_id}
+                keyExtractor={(item) => item._id}
                 contentContainerStyle={{ padding: SIZES.medium, rowGap: SIZES.medium }}
                 ListHeaderComponent={() => (
                     <>
@@ -95,9 +86,11 @@ const JobSearch = () => {
                         <View style={styles.loaderContainer}>
                             {searchLoader ? (
                                 <ActivityIndicator size='large' color={COLORS.primary} />
-                            ) : searchError && (
+                            ) 
+                            : searchError && (
                                 <Text>Oops something went wrong</Text>
-                            )}
+                            )
+                            }
                         </View>
                     </>
                 )}

@@ -1,10 +1,12 @@
 import {useState,useEffect} from 'react';
 import axios from 'axios';
+import { client } from './sanity';
 
 const useFetch = (endpoint,query)=>{
     const [data,setData]= useState([]);
     const [isLoading,setIsLoading]= useState(false);
     const [error,setError] = useState(null);
+    const [sanityData,setSanityData]= useState([]);
 
 const options = {
   method: 'GET',
@@ -19,8 +21,12 @@ const options = {
     const fetchData= async ()=>{
         setIsLoading(true);
         try{
-            const response= await axios.request(options);
-            setData(response.data.data);
+            client
+                    .fetch(endpoint)
+                    .then((data)=>{
+                        setSanityData(data);
+                    })
+           
             setIsLoading(false);
         }catch(error){
             console.log(error)
@@ -38,7 +44,7 @@ const options = {
         fetchData();
     }
 
-    return {data,isLoading,error,refectch}
+    return {data,isLoading,error,refectch,sanityData}
 }
 
 export default useFetch;
